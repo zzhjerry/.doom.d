@@ -59,3 +59,15 @@
 
 ;; consult
 (define-key global-map (kbd "C-s") #'consult-line)
+
+;; lsp
+(define-key lsp-mode-map (kbd "s-.") #'lsp-goto-implementation)
+
+;;
+(define-key minibuffer-local-map (kbd "s-n") #'next-history-element)
+(define-key minibuffer-local-map (kbd "s-p") #'previous-history-element)
+
+;; evil
+(define-key evil-insert-state-map (kbd "C-d") #'delete-char)
+
+(define-key evil-insert-state-map (kbd "C-k") #'evil-delete-line)
