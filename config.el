@@ -34,6 +34,8 @@
 ;; org-roam
 (setq org-roam-directory (file-truename "~/iCloud/roam"))
 (org-roam-db-autosync-enable)
+;; Do not open org-roam buffer on file open
+(setq +org-roam-open-buffer-on-find-file nil)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -61,7 +63,8 @@
 (define-key global-map (kbd "C-s") #'consult-line)
 
 ;; lsp
-(define-key lsp-mode-map (kbd "s-.") #'lsp-goto-implementation)
+(after! lsp
+  (define-key lsp-mode-map (kbd "s-.") #'lsp-goto-implementation))
 
 ;;
 (define-key minibuffer-local-map (kbd "s-n") #'next-history-element)
@@ -70,4 +73,5 @@
 ;; evil
 (define-key evil-insert-state-map (kbd "C-d") #'delete-char)
 
-(define-key evil-insert-state-map (kbd "C-k") #'evil-delete-line)
+(define-key evil-insert-state-map (kbd "C-k") #'evil-deleteline)
+
