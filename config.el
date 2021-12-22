@@ -29,13 +29,20 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+(use-package! org
+  :config
+  (setq org-directory "~/org/")
+  (add-hook! 'org-mode-hook
+    (auto-fill-mode 1)))
 
 ;; org-roam
-(setq org-roam-directory (file-truename "~/iCloud/roam"))
-(org-roam-db-autosync-enable)
+
 ;; Do not open org-roam buffer on file open
-(setq +org-roam-open-buffer-on-find-file nil)
+(after! org-roam
+  (setq org-roam-directory (file-truename "~/iCloud/roam"))
+  (org-roam-db-autosync-enable)
+  (setq +org-roam-open-buffer-on-find-file nil))
+
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
