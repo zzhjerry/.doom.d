@@ -48,6 +48,8 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
+(map! :n "s-," #'xref-go-back)
+
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -82,3 +84,6 @@
 
 (define-key evil-insert-state-map (kbd "C-k") #'evil-deleteline)
 
+(use-package! powerline
+  :config
+  (powerline-default-theme))
