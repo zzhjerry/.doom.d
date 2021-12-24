@@ -49,7 +49,7 @@
 (setq display-line-numbers-type t)
 
 (map! :n "s-," #'xref-go-back)
-
+(map! :n "s-." #'xref-find-definitions)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -84,6 +84,9 @@
 
 (define-key evil-insert-state-map (kbd "C-k") #'evil-deleteline)
 
-(use-package! powerline
-  :config
-  (powerline-default-theme))
+;; (use-package! powerline
+;;   :config
+;;   (powerline-default-theme))
+
+(use-package! projectile
+  (setq projectile-project-search-path '("~/dev")))
