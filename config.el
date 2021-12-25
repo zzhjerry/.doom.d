@@ -88,5 +88,5 @@
 ;;   :config
 ;;   (powerline-default-theme))
 
-(use-package! projectile
+(after! projectile
   (setq projectile-project-search-path '("~/dev")))
