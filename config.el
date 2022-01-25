@@ -32,6 +32,7 @@
 (use-package! org
   :config
   (setq org-directory "~/org/")
+  (global-set-key (kbd "C-c a") #'org-agenda)
   (add-hook! 'org-mode-hook
     (auto-fill-mode 1)))
 
@@ -42,6 +43,9 @@
   (setq org-roam-directory (file-truename "~/iCloud/roam"))
   (org-roam-db-autosync-enable)
   (setq +org-roam-open-buffer-on-find-file nil))
+
+(after! org-timer
+  (define-key global-map (kbd "C-c C-x ;") #'org-timer-set-timer))
 
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
@@ -81,8 +85,9 @@
 
 ;; evil
 (define-key evil-insert-state-map (kbd "C-d") #'delete-char)
-
 (define-key evil-insert-state-map (kbd "C-k") #'evil-deleteline)
+(define-key evil-normal-state-map (kbd "] e") #'flycheck-next-error)
+(define-key evil-normal-state-map (kbd "[ e") #'flycheck-previous-error)
 
 ;; (use-package! powerline
 ;;   :config
@@ -90,3 +95,36 @@
 
 (after! projectile
   (setq projectile-project-search-path '("~/dev")))
+
+(defun my-org-screenshot ()
+  "Take a screenshot into a time stamped unique-named file in the
+same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (setq filename
+        (concat
+         (make-temp-name
+          (concat (buffer-file-name)
+                  "_"
+                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+  (call-process "import" nil nil nil filename)
+  (insert (concat "[[" filename "]]"))
+  (org-display-inline-images))
+
+;; lisp
+(setq inferior-lisp-program "/usr/local/bin/sbcl")
+
+;; typescript
+;;; auto formatting on saving in typescript files
+
+(use-package! tree-sitter)
+
+(use-package! tree-sitter-langs)
+
+(use-package! vertico-directory
+  :after vertico
+  :ensure nil
+  :bind (:map vertico-map
+         ("C-l" . vertico-directory-up)))
+
+(after! evil-snipe
+  (setq evil-snipe-scope 'visible))

@@ -50,3 +50,6 @@
 ;(unpin! t)
 
 ;; (package! powerline)
+(package! slime)
+(package! tree-sitter)
+(package! tree-sitter-langs)
