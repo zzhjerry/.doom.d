@@ -89,6 +89,9 @@
 (define-key evil-normal-state-map (kbd "] e") #'flycheck-next-error)
 (define-key evil-normal-state-map (kbd "[ e") #'flycheck-previous-error)
 
+(after! evil-commands
+  (global-set-key (kbd "s-`") #'evil-switch-to-windows-last-buffer))
+
 ;; (use-package! powerline
 ;;   :config
 ;;   (powerline-default-theme))
@@ -128,3 +131,18 @@ same directory as the org-buffer and insert a link to this file."
 
 (after! evil-snipe
   (setq evil-snipe-scope 'visible))
+
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
