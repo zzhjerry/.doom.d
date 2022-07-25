@@ -51,7 +51,8 @@
 
 ;; (package! powerline)
 (package! slime)
-(package! tree-sitter)
-(package! tree-sitter-langs)
+;; (package! tree-sitter)
+;; (package! tree-sitter-langs)
 (unpin! org-roam)
 (package! org-roam-ui)
+(package! visual-fill-column)

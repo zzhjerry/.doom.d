@@ -7,7 +7,7 @@
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "Zhang Zhaoheng"
-      user-mail-address "john@doe.com")
+      user-mail-address "zzh699@gmail.com")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
@@ -33,8 +33,7 @@
   :config
   (setq org-directory "~/org/")
   (global-set-key (kbd "C-c a") #'org-agenda)
-  (add-hook! 'org-mode-hook
-    (auto-fill-mode 1)))
+  (add-hook! 'org-mode-hook 'visual-fill-column-mode))
 
 ;; org-roam
 
@@ -86,6 +85,8 @@
 ;; evil
 (define-key evil-insert-state-map (kbd "C-d") #'delete-char)
 (define-key evil-insert-state-map (kbd "C-k") #'evil-deleteline)
+(define-key evil-normal-state-map (kbd "j") #'evil-next-visual-line)
+(define-key evil-normal-state-map (kbd "k") #'evil-previous-visual-line)
 (define-key evil-normal-state-map (kbd "] e") #'flycheck-next-error)
 (define-key evil-normal-state-map (kbd "[ e") #'flycheck-previous-error)
 
@@ -99,6 +100,7 @@
 (after! projectile
   (setq projectile-project-search-path '("~/dev")))
 
+;; org
 (defun my-org-screenshot ()
   "Take a screenshot into a time stamped unique-named file in the
 same directory as the org-buffer and insert a link to this file."
@@ -119,9 +121,9 @@ same directory as the org-buffer and insert a link to this file."
 ;; typescript
 ;;; auto formatting on saving in typescript files
 
-(use-package! tree-sitter)
+;; (use-package! tree-sitter)
 
-(use-package! tree-sitter-langs)
+;; (use-package! tree-sitter-langs)
 
 (use-package! vertico-directory
   :after vertico
