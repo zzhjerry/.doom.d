@@ -30,6 +30,8 @@
 (setq doom-leader-key "C-q")
 (setq doom-leader-alt-key "C-q")
 
+(desktop-save-mode 1)
+
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (use-package! org
