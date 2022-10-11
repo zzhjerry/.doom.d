@@ -56,3 +56,5 @@
 (unpin! org-roam)
 (package! org-roam-ui)
 (package! visual-fill-column)
+(package! annotate)
+(package! org-modern)

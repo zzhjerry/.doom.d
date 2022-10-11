@@ -27,10 +27,9 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-one)
 
-(setq doom-leader-key "C-q")
 (setq doom-leader-alt-key "C-q")
 
-(desktop-save-mode 1)
+;; (desktop-save-mode 1)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -43,10 +42,10 @@
 ;; org-roam
 
 ;; Do not open org-roam buffer on file open
-(after! org-roam
-  (setq org-roam-directory (file-truename "~/iCloud/roam"))
-  (org-roam-db-autosync-enable)
-  (setq +org-roam-open-buffer-on-find-file nil))
+;; (after! org-roam
+;;   (setq org-roam-directory (file-truename "~/iCloud/roam"))
+;;   (org-roam-db-autosync-enable)
+;;   (setq +org-roam-open-buffer-on-find-file nil))
 
 (after! org-timer
   (define-key global-map (kbd "C-c C-x ;") #'org-timer-set-timer))
@@ -58,6 +57,8 @@
 
 (map! :n "s-," #'xref-go-back)
 (map! :n "s-." #'xref-find-definitions)
+(map! :g "C-x C-l" #'+workspace/switch-to)
+(map! :g "s-\\" #'lsp-format-buffer)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -81,11 +82,15 @@
 
 ;; lsp
 (after! lsp
-  (define-key lsp-mode-map (kbd "s-.") #'lsp-goto-implementation))
+  (define-key lsp-mode-map (kbd "s-.") #'lsp-goto-implementation)
+  (setq lsp-clients-typescript-server-args '("--stdio" "--tsserver-log-file" "/dev/stderr")))
 
 ;;
 (define-key minibuffer-local-map (kbd "s-n") #'next-history-element)
 (define-key minibuffer-local-map (kbd "s-p") #'previous-history-element)
+
+;; ctrl-x-map
+(define-key ctl-x-map (kbd "/") #'+default/search-project)
 
 ;; evil
 (define-key evil-insert-state-map (kbd "C-d") #'delete-char)
@@ -103,6 +108,7 @@
 ;;   (powerline-default-theme))
 
 (after! projectile
+  (define-key projectile-mode-map (kbd "s-p") #'projectile-find-file)
   (setq projectile-project-search-path '("~/dev")))
 
 ;; org
@@ -121,10 +127,12 @@ same directory as the org-buffer and insert a link to this file."
   (org-display-inline-images))
 
 ;; lisp
-(setq inferior-lisp-program "/usr/local/bin/sbcl")
+;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
 
 ;; typescript
 ;;; auto formatting on saving in typescript files
+(after! typescript-mode
+  (setq typescript-indent-level 2))
 
 ;; (use-package! tree-sitter)
 
