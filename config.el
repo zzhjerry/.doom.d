@@ -57,8 +57,13 @@
 
 (map! :n "s-," #'xref-go-back)
 (map! :n "s-." #'xref-find-definitions)
+(map! :g "s-;" #'er/expand-region)
 (map! :g "C-x C-l" #'+workspace/switch-to)
-(map! :g "s-\\" #'lsp-format-buffer)
+(map! :g "s-\\" #'lsp-eslint-apply-all-fixes)
+(map! :g "C-/" #'hippie-expand)
+
+(setq gc-cons-threshold (* 300 1024 1024))
+(setq auto-save-default nil)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -81,9 +86,11 @@
 (define-key global-map (kbd "C-s") #'consult-line)
 
 ;; lsp
-(after! lsp
-  (define-key lsp-mode-map (kbd "s-.") #'lsp-goto-implementation)
-  (setq lsp-clients-typescript-server-args '("--stdio" "--tsserver-log-file" "/dev/stderr")))
+(after! lsp-mode
+  (map! :n "s-f" #'lsp-find-references)
+  (setq lsp-clients-typescript-server-args '("--stdio" "--tsserver-log-file" "/dev/stderr"))
+  (setq lsp-ui-sideline-diagnostic-max-lines 8)
+  (setq lsp-eslint-auto-fix-on-save t))
 
 ;;
 (define-key minibuffer-local-map (kbd "s-n") #'next-history-element)
@@ -99,6 +106,8 @@
 (define-key evil-normal-state-map (kbd "k") #'evil-previous-visual-line)
 (define-key evil-normal-state-map (kbd "] e") #'flycheck-next-error)
 (define-key evil-normal-state-map (kbd "[ e") #'flycheck-previous-error)
+(map! :g "s-d" #'evil-multiedit-match-symbol-and-next)
+(map! :g "s-D" #'evil-multiedit-match-symbol-and-prev)
 
 (after! evil-commands
   (global-set-key (kbd "s-`") #'evil-switch-to-windows-last-buffer))
@@ -108,7 +117,6 @@
 ;;   (powerline-default-theme))
 
 (after! projectile
-  (define-key projectile-mode-map (kbd "s-p") #'projectile-find-file)
   (setq projectile-project-search-path '("~/dev")))
 
 ;; org
@@ -147,17 +155,49 @@ same directory as the org-buffer and insert a link to this file."
 (after! evil-snipe
   (setq evil-snipe-scope 'visible))
 
-(use-package! websocket
-    :after org-roam)
+;; (use-package! websocket
+;;     :after org-roam)
 
-(use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+;; (use-package! org-roam-ui
+;;     :after org-roam ;; or :after org
+;; ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;; ;;         a hookable mode anymore, you're advised to pick something yourself
+;; ;;         if you don't care about startup time, use
+;; ;;  :hook (after-init . org-roam-ui-mode)
+;;     :config
+;;     (setq org-roam-ui-sync-theme t
+;;           org-roam-ui-follow t
+;;           org-roam-ui-update-on-save t
+;;           org-roam-ui-open-on-start t))
+
+(defun echo-file-path ()
+  (interactive)
+  (message (buffer-file-name)))
+(map! :g "C-x e" #'echo-file-path)
+
+;; May cause buffer open to be slow
+(after! yasnippet
+  (yas-global-mode))
+
+(evil-define-text-object exato-inner-jsx-attr (count &optional _beg _end _type)
+  (list (point) (+ 3 (point))))
+
+(define-key evil-inner-text-objects-map "n" 'exato-inner-jsx-attr)
+
+(use-package turbo-log
+  :bind (("C-s-l" . turbo-log-print)
+         ("C-s-i" . turbo-log-print-immediately)
+         ("C-s-h" . turbo-log-comment-all-logs)
+         ("C-s-s" . turbo-log-uncomment-all-logs)
+         ("C-s-[" . turbo-log-paste-as-logger)
+         ("C-s-]" . turbo-log-paste-as-logger-immediately)
+         ("C-s-x" . turbo-log-delete-all-logs))
+  :config
+  (setq turbo-log-msg-format-template "\": %s\"")
+  (setq turbo-log-allow-insert-without-tree-sitter-p t))
+
+(use-package! tree-sitter
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
