@@ -1,0 +1,4 @@
+# key: <
+# name: jsx tag
+# --
+<${1:tagname}>$0</$1>

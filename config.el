@@ -41,15 +41,55 @@
 
 ;; org-roam
 
-;; Do not open org-roam buffer on file open
-;; (after! org-roam
-;;   (setq org-roam-directory (file-truename "~/iCloud/roam"))
-;;   (org-roam-db-autosync-enable)
-;;   (setq +org-roam-open-buffer-on-find-file nil))
+(after! org-roam
+  ;; (setq org-roam-directory (file-truename "~/iCloud/roam"))
+  (org-roam-db-autosync-enable)
+  ;; Do not open org-roam buffer on file open
+  (setq +org-roam-open-buffer-on-find-file nil)
+  (defun org-roam-tag-replace ()
+    (interactive)
+    ;; TODO how to show prompts like: select tag to replace/add:
+    (call-interactively 'org-roam-tag-remove)
+    (call-interactively 'org-roam-tag-add)
+    (save-buffer)))
 
 (after! org-timer
   (define-key global-map (kbd "C-c C-x ;") #'org-timer-set-timer))
 
+(use-package cape
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev))
+
+(after! company
+  (setq company-dabbrev-other-buffers t)
+  (define-key company-active-map (kbd "TAB") #'company-complete)
+  (setq company-backends '((company-capf company-dabbrev company-yasnippet))))
+
+;; (use-package corfu
+;;     ;; Optional customizations
+;;   :custom
+;;   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+;;   (corfu-auto t)                 ;; Enable auto completion
+;;   (corfu-auto-delay 0.0)
+;;   (corfu-auto-prefix 2)
+;;   (corfu-separator ?c)          ;; Orderless field separator
+;;   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+;;   ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+;;   (corfu-preview-current nil)    ;; Disable current candidate preview
+;;   ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+;;   ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+;;   ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+;;   ;; Enable Corfu only for certain modes.
+;;   ;; :hook ((prog-mode . corfu-mode)
+;;   ;;        (shell-mode . corfu-mode)
+;;   ;;        (eshell-mode . corfu-mode))
+
+;;   ;; Recommended: Enable Corfu globally.
+;;   ;; This is recommended since Dabbrev can be used globally (M-/).
+;;   ;; See also `global-corfu-modes'.
+;;   :init
+;;   (global-corfu-mode))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -88,9 +128,14 @@
 ;; lsp
 (after! lsp-mode
   (map! :n "s-f" #'lsp-find-references)
-  (setq lsp-clients-typescript-server-args '("--stdio" "--tsserver-log-file" "/dev/stderr"))
   (setq lsp-ui-sideline-diagnostic-max-lines 8)
-  (setq lsp-eslint-auto-fix-on-save t))
+  (setq lsp-eslint-auto-fix-on-save t)
+  (setq gc-cons-threshold 500000000)
+  (setq read-process-output-max (* 1024 1024))
+  (setq lsp-idle-delay 0.2)
+  (setq lsp-file-watch-threshold 2000)
+  (add-to-list 'lsp-file-watch-ignored-directories "tila-submodule/packages/tila-vscode")
+  (add-to-list 'lsp-file-watch-ignored-directories "tila-devtools"))
 
 ;;
 (define-key minibuffer-local-map (kbd "s-n") #'next-history-element)
@@ -145,6 +190,9 @@ same directory as the org-buffer and insert a link to this file."
 ;; (use-package! tree-sitter)
 
 ;; (use-package! tree-sitter-langs)
+
+(after! vertico-repeat
+  (setq vertico-repeat-filter (remove 'execute-extended-command vertico-repeat-filter)))
 
 (use-package! vertico-directory
   :after vertico
@@ -201,3 +249,14 @@ same directory as the org-buffer and insert a link to this file."
   (require 'tree-sitter-langs)
   (global-tree-sitter-mode)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+ (use-package consult-dash
+    :bind (("M-s d" . consult-dash))
+    :config
+    ;; Use the symbol at point as initial search term
+    (consult-customize consult-dash :initial (thing-at-point 'symbol)))
+
+(defun open-vela-user-dir ()
+  (interactive)
+  (pop-to-buffer-same-window
+   (find-file-noselect (read-file-name "Find file: " "~/Library/Application Support/@byted/vela/User/"))))

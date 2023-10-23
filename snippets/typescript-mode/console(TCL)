@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: console(TCL)
+# uuid: console-tcl-ide
+# key: console
+# condition: t
+# --
+console.log('TCL: $1');

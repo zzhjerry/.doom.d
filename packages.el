@@ -49,6 +49,9 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
+(package! consult-dash)
+(package! cape)
+;; (package! corfu :disabled)
 ;; (package! powerline)
 ;; (package! slime)
 ;; (package! websocket)
