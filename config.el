@@ -260,3 +260,45 @@ same directory as the org-buffer and insert a link to this file."
   (interactive)
   (pop-to-buffer-same-window
    (find-file-noselect (read-file-name "Find file: " "~/Library/Application Support/@byted/vela/User/"))))
+
+(defun get-screen-num (&optional screen)
+  "Return the number of a screen to operate on.
+
+SCREEN denotes the position of element from (display-monitor-attributes-list)
+If SCREEN is provided, return it directly.
+If there is only one element in (display-monitor-attributes-list)), return 1.
+Else prompt user to select which screen to use. The user should select a number.
+And the prompt should show which screen is related to which number. "
+  (let* ((number-of-screens (length (display-monitor-attributes-list))))
+    (or 1 (and (equal number-of-screens 1) number-of-screens)
+         screen
+         ;; TODO: restrict the selection to the correct range
+         (read-number
+          (format
+           "Select which screen to use (%s): "
+           (--reduce
+            (format "%s | %s" acc it)
+            (-map-indexed
+             (lambda (index it) (format "%s - %s" (1+ index) (cdr it)))
+             (-select-column 4 (display-monitor-attributes-list)))))))))
+
+(defun my-resize-emacs-window (&optional screen)
+  "Set frame to the 3/4 position in horizontally on the right and in
+full-height vertically. When called interactivly, it prompts user to
+select when screen it should use when there are more than one screen."
+  (interactive)
+  ;; Assume the MacOS dock is about 50 pixels tall
+  (let* ((screen-num (get-screen-num screen))
+         ;; Get monitor attributes
+         (monitor-attrs (nth (1- screen-num) (display-monitor-attributes-list)))
+         ;; (monitor-x (nth 1 (assq 'workarea monitor-attrs)))
+         ;; (monitor-y (nth 2 (assq 'workarea monitor-attrs)))
+         (monitor-width (nth 3 (assq 'workarea monitor-attrs)))
+         (monitor-height (nth 4 (assq 'workarea monitor-attrs)))
+         ;; Set the frame width to 2/3 of the monitor width, and height to the usable height
+         (frame-chars-wide (/ (* 3 monitor-width) 4 (frame-char-width)))
+         (frame-chars-tall (/ monitor-height (frame-char-height))))
+    (set-frame-position (selected-frame) (/ monitor-width 4) 0)
+    (set-frame-size (selected-frame) frame-chars-wide frame-chars-tall)))
+
+(my-resize-emacs-window 1)
