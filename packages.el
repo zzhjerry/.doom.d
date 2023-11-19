@@ -51,22 +51,24 @@
 
 (package! consult-dash)
 (package! cape)
-;; disable corfu because it only use one completion backend at a time where company supports multiple.
-(package! corfu :disable t)
-;; (package! powerline)
-;; (package! slime)
-;; (package! websocket)
-(package! tree-sitter)
-(package! tree-sitter-langs)
-;; (unpin! org-roam)
-;; (package! org-roam-ui)
 (package! visual-fill-column)
 (package! annotate)
-;; (package! org-modern)
 (package! turbo-log :recipe (:host github :repo "artawower/turbo-log"))
+(package! treesit-auto)
+(package! evil-textobj-tree-sitter)
 
 ;; Pacakges to be try out
 ;; A note taking tool focus on filtering and full text search
 ;; (package! deft)
 ;; A note taking tool to build a Wiki style note system
 ;; (package! hown)
+;; (package! org-modern)
+;; (package! powerline)
+;; (package! slime)
+;; (package! websocket)
+;; (package! tree-sitter)
+;; (package! tree-sitter-langs)
+;; (unpin! org-roam)
+;; (package! org-roam-ui)
+;; disable corfu because it only use one completion backend at a time where company supports multiple.
+(package! corfu :disable t) ;; corfu is another completion frontend, similar to company.

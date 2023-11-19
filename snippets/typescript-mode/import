@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: import
+# uuid: import
+# key: im
+# condition: t
+# --
+import {${2}} from '${1}';${0}

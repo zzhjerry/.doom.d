@@ -37,7 +37,8 @@
   :config
   (setq org-directory "~/org/")
   (global-set-key (kbd "C-c a") #'org-agenda)
-  (add-hook! 'org-mode-hook 'visual-fill-column-mode))
+  (add-hook! 'org-mode-hook 'visual-fill-column-mode)
+  (remove-hook 'org-mode-hook 'evil-org-mode))
 
 ;; org-roam
 
@@ -56,12 +57,16 @@
 (after! org-timer
   (define-key global-map (kbd "C-c C-x ;") #'org-timer-set-timer))
 
+(after! which-key
+  (setq which-key-idle-delay 0.2))
+
 (use-package cape
   :init
   (add-to-list 'completion-at-point-functions #'cape-dabbrev))
 
 (after! company
   (setq company-dabbrev-other-buffers t)
+  (setq company-idle-delay 0.01)
   (define-key company-active-map (kbd "TAB") #'company-complete)
   (setq company-backends '((company-capf company-dabbrev company-yasnippet))))
 
@@ -187,10 +192,6 @@ same directory as the org-buffer and insert a link to this file."
 (after! typescript-mode
   (setq typescript-indent-level 2))
 
-;; (use-package! tree-sitter)
-
-;; (use-package! tree-sitter-langs)
-
 (after! vertico-repeat
   (setq vertico-repeat-filter (remove 'execute-extended-command vertico-repeat-filter)))
 
@@ -227,11 +228,6 @@ same directory as the org-buffer and insert a link to this file."
 (after! yasnippet
   (yas-global-mode))
 
-(evil-define-text-object exato-inner-jsx-attr (count &optional _beg _end _type)
-  (list (point) (+ 3 (point))))
-
-(define-key evil-inner-text-objects-map "n" 'exato-inner-jsx-attr)
-
 (use-package turbo-log
   :bind (("C-s-l" . turbo-log-print)
          ("C-s-i" . turbo-log-print-immediately)
@@ -243,12 +239,6 @@ same directory as the org-buffer and insert a link to this file."
   :config
   (setq turbo-log-msg-format-template "\": %s\"")
   (setq turbo-log-allow-insert-without-tree-sitter-p t))
-
-(use-package! tree-sitter
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
  (use-package consult-dash
     :bind (("M-s d" . consult-dash))
@@ -295,10 +285,29 @@ select when screen it should use when there are more than one screen."
          ;; (monitor-y (nth 2 (assq 'workarea monitor-attrs)))
          (monitor-width (nth 3 (assq 'workarea monitor-attrs)))
          (monitor-height (nth 4 (assq 'workarea monitor-attrs)))
-         ;; Set the frame width to 2/3 of the monitor width, and height to the usable height
+         ;; Set the frame width to 3/4 of the monitor width, and height to the usable height
          (frame-chars-wide (/ (* 3 monitor-width) 4 (frame-char-width)))
          (frame-chars-tall (/ monitor-height (frame-char-height))))
-    (set-frame-position (selected-frame) (/ monitor-width 4) 0)
+    (set-frame-position (selected-frame) (- (/ monitor-width 4) 20) 0)
     (set-frame-size (selected-frame) frame-chars-wide frame-chars-tall)))
 
 (my-resize-emacs-window 1)
+
+(defun disable-evil-org-key-theme ()
+  (message "executed disable hook")
+  (evil-org-set-key-theme '(navigation)))
+(after! evil-org-mode
+  (message "evil-org-mode loaded")
+  (add-hook 'evil-org-mode-hook #'disable-evil-org-key-theme))
+
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
+
+(use-package evil-textobj-tree-sitter
+  :ensure t
+  :config
+  (define-key evil-outer-text-objects-map "x" (evil-textobj-tree-sitter-get-textobj "jsx_attribute"
+                                                '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute)))))
+  (define-key evil-inner-text-objects-map "x" (evil-textobj-tree-sitter-get-textobj "jsx_attribute"
+                                                '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute))))))
