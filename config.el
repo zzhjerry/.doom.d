@@ -311,3 +311,7 @@ select when screen it should use when there are more than one screen."
                                                 '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute)))))
   (define-key evil-inner-text-objects-map "x" (evil-textobj-tree-sitter-get-textobj "jsx_attribute"
                                                 '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute))))))
+
+(after! eglot
+  (setq eglot-confirm-server-initiated-edits nil)
+  (add-to-list 'eglot-stay-out-of 'imenu))
