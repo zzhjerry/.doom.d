@@ -156,15 +156,26 @@
 (define-key evil-normal-state-map (kbd "k") #'evil-previous-visual-line)
 (define-key evil-normal-state-map (kbd "] e") #'flycheck-next-error)
 (define-key evil-normal-state-map (kbd "[ e") #'flycheck-previous-error)
-(map! :g "s-d" #'evil-multiedit-match-symbol-and-next)
-(map! :g "s-D" #'evil-multiedit-match-symbol-and-prev)
+(map! :g
+      "s-d" #'evil-multiedit-match-symbol-and-next
+      "s-D" #'evil-multiedit-match-symbol-and-prev
+      "s-`" #'evil-switch-to-windows-last-buffer
+      "s-1" #'+workspace/switch-to-0
+      "s-2" #'+workspace/switch-to-1
+      "s-3" #'+workspace/switch-to-2
+      "s-4" #'+workspace/switch-to-3
+      "s-5" #'+workspace/switch-to-4
+      "s-6" #'+workspace/switch-to-5
+      "s-7" #'+workspace/switch-to-6
+      "s-8" #'+workspace/switch-to-7
+      :nvm
+      "] e" #'flymake-goto-next-error
+      "[ e" #'flymake-goto-prev-error)
 
-(after! evil-commands
-  (global-set-key (kbd "s-`") #'evil-switch-to-windows-last-buffer))
+(use-package info
+  :config
+  (evil-set-initial-state 'Info-mode 'emacs))
 
-;; (use-package! powerline
-;;   :config
-;;   (powerline-default-theme))
 
 (after! projectile
   (setq projectile-project-search-path '("~/dev")))
@@ -312,6 +323,19 @@ select when screen it should use when there are more than one screen."
   (define-key evil-inner-text-objects-map "x" (evil-textobj-tree-sitter-get-textobj "jsx_attribute"
                                                 '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute))))))
 
-(after! eglot
+(use-package! eglot
+  :config
+  (add-hook 'typescript-ts-base-mode-hook 'eglot-ensure)
   (setq eglot-confirm-server-initiated-edits nil)
-  (add-to-list 'eglot-stay-out-of 'imenu))
+  (add-to-list 'eglot-stay-out-of 'imenu)
+  (define-key eglot-mode-map (kbd "s-f") #'xref-find-references))
+
+(use-package! symbol-overlay
+  :config
+  (setq symbol-overlay-idle-time 0.2)
+  (add-hook! 'prog-mode-hook #'symbol-overlay-mode))
+
+(map! :map symbol-overlay-mode-map
+      :nvmg
+      "<tab>" #'symbol-overlay-jump-next
+      "<backtab>" #'symbol-overlay-jump-prev)

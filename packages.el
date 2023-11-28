@@ -56,6 +56,7 @@
 (package! turbo-log :recipe (:host github :repo "artawower/turbo-log"))
 (package! treesit-auto)
 (package! evil-textobj-tree-sitter)
+(package! symbol-overlay)
 
 ;; Pacakges to be try out
 ;; A note taking tool focus on filtering and full text search
