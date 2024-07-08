@@ -154,10 +154,7 @@
 (define-key evil-insert-state-map (kbd "C-k") #'evil-deleteline)
 (define-key evil-normal-state-map (kbd "j") #'evil-next-visual-line)
 (define-key evil-normal-state-map (kbd "k") #'evil-previous-visual-line)
-(define-key evil-normal-state-map (kbd "] e") #'flycheck-next-error)
-(define-key evil-normal-state-map (kbd "[ e") #'flycheck-previous-error)
-(map! :g
-      "s-d" #'evil-multiedit-match-symbol-and-next
+(map! "s-d" #'evil-multiedit-match-symbol-and-next
       "s-D" #'evil-multiedit-match-symbol-and-prev
       "s-`" #'evil-switch-to-windows-last-buffer
       "s-1" #'+workspace/switch-to-0
@@ -167,10 +164,28 @@
       "s-5" #'+workspace/switch-to-4
       "s-6" #'+workspace/switch-to-5
       "s-7" #'+workspace/switch-to-6
-      "s-8" #'+workspace/switch-to-7
-      :nvm
-      "] e" #'flymake-goto-next-error
-      "[ e" #'flymake-goto-prev-error)
+      "s-8" #'+workspace/switch-to-7)
+(map! :n "[ e" #'flymake-goto-prev-error
+      :n "] e" #'flymake-goto-next-error)
+(map! :map eglot-mode-map :n "SPC c a" #'eglot-code-action-quickfix)
+
+(use-package flycheck
+  :config
+  (flycheck-add-mode 'javascript-eslint 'typescript-ts-mode)
+  (global-flycheck-mode t))
+
+(defun eslint-fix-file ()
+  (interactive)
+  (message "eslint --fixing the file %s" (buffer-file-name))
+  (shell-command (concat "eslint --fix " (buffer-file-name))))
+
+(use-package! sgml-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.ttml\\'" . sgml-mode)))
+
+(use-package! css-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.ttss\\'" . css-ts-mode)))
 
 (use-package info
   :config
@@ -318,17 +333,23 @@ select when screen it should use when there are more than one screen."
 (use-package evil-textobj-tree-sitter
   :ensure t
   :config
-  (define-key evil-outer-text-objects-map "x" (evil-textobj-tree-sitter-get-textobj "jsx_attribute"
-                                                '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute)))))
-  (define-key evil-inner-text-objects-map "x" (evil-textobj-tree-sitter-get-textobj "jsx_attribute"
-                                                '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute))))))
+  (define-key evil-outer-text-objects-map "x"
+              (evil-textobj-tree-sitter-get-textobj
+                "jsx_attribute"
+                '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute)))))
+  (define-key evil-inner-text-objects-map "x"
+              (evil-textobj-tree-sitter-get-textobj
+                "jsx_attribute"
+                '((tsx-ts-mode . ((jsx_attribute) @jsx_attribute))))))
 
 (use-package! eglot
   :config
   (add-hook 'typescript-ts-base-mode-hook 'eglot-ensure)
   (setq eglot-confirm-server-initiated-edits nil)
   (add-to-list 'eglot-stay-out-of 'imenu)
-  (define-key eglot-mode-map (kbd "s-f") #'xref-find-references))
+  (define-key eglot-mode-map (kbd "s-f") #'xref-find-references)
+  (add-hook 'typescript-ts-base-mode-hook (lambda() (flymake-eslint-enable)))
+  (map! :n "g i" #'eglot-find-implementation))
 
 (use-package! symbol-overlay
   :config
@@ -336,6 +357,108 @@ select when screen it should use when there are more than one screen."
   (add-hook! 'prog-mode-hook #'symbol-overlay-mode))
 
 (map! :map symbol-overlay-mode-map
-      :nvmg
+      :nv
       "<tab>" #'symbol-overlay-jump-next
       "<backtab>" #'symbol-overlay-jump-prev)
+
+(defun open-packagejson-in-current-project ()
+  (interactive)
+  (pop-to-buffer-same-window (find-file-noselect (concat (project-root (project-current)) "package.json"))))
+
+(map! :n "g p" #'open-packagejson-in-current-project)
+
+(defun microapp-jump-to-definition ()
+  (interactive)
+  (let* ((node (treesit-node-at (point) 'html))
+         (text (treesit-node-text node))
+         (plain-text (substring-no-properties text))
+         (current-file (buffer-file-name))
+         (directory (file-name-directory current-file))
+         (base-name (file-name-base current-file))
+         (js-file (concat directory base-name ".js")))
+    (find-file js-file)
+    (microapp-goto-property-identifier-matching-target plain-text)))
+
+(defun microapp-goto-property-identifier-matching-target (target)
+  (let* ((query '((call_expression
+                   (identifier) @id (:equal @id "Page")
+                   (arguments (object (pair (property_identifier) @p))))))
+         (nodes (treesit-query-capture (treesit-buffer-root-node) query))
+         (matched-node (cl-find target nodes
+                                :test (lambda (text node)
+                                        (string= text (treesit-node-text (cdr node)))))))
+    (when matched-node
+      (let* ((node (cdr matched-node))
+             (start (treesit-node-start node)))
+        (goto-char start)))))
+
+(map! :n "C-." #'microapp-jump-to-definition)
+
+
+(require 'cl-lib)
+
+(defvar command-stats-file (expand-file-name "~/command-stats.elc")
+  "File to save command statistics.")
+
+(defvar command-stats (make-hash-table :test 'equal)
+  "Hash table to hold command statistics.")
+
+(defun load-command-stats ()
+  "Load command statistics from `command-stats-file'."
+  (when (file-exists-p command-stats-file)
+    (let ((data (with-temp-buffer
+                  (insert-file-contents command-stats-file)
+                  (read (current-buffer)))))
+      (clrhash command-stats)
+      (dolist (item data)
+        (puthash (car item) (cdr item) command-stats)))))
+
+(defun save-command-stats ()
+  "Save command statistics to `command-stats-file'."
+  (with-temp-file command-stats-file
+    (prin1 (let (result)
+             (maphash (lambda (key value)
+                        (push (cons key value) result))
+                      command-stats)
+             result)
+            (current-buffer))))
+
+(defun record-command-stats ()
+  "Record command statistics."
+  (unless (eq this-command 'self-insert-command)
+    (let* ((date (format-time-string "%Y-%m-%d"))
+         (command-name (symbol-name this-command))
+         (key-sequence (key-description (this-command-keys)))
+         (hash-key (concat date "|" command-name))
+         (current-stats (gethash hash-key command-stats)))
+    (if current-stats
+        (progn
+          (cl-incf (cdr current-stats))
+          (unless (member key-sequence (car current-stats))
+            (push key-sequence (car current-stats))))
+      (puthash hash-key (cons (list key-sequence) 1) command-stats)))
+    ))
+
+(add-hook 'post-command-hook 'record-command-stats)
+
+(defun display-command-stats ()
+  "Display command statistics in a new buffer."
+  (interactive)
+  (let ((buffer (get-buffer-create "*Command Stats*")))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (insert (format "%-40s %-40s %-40s %s\n" "Date" "Command" "Key Sequence" "Invoked Times"))
+      (maphash (lambda (key value)
+                 (let* ((split-key (split-string key "|"))
+                        (date (car split-key))
+                        (command (cadr split-key)))
+                   (dolist (key-sequence (car value))
+                     (insert (format "%-40s %-40s %-40s %d\n" date command key-sequence (cdr value))))))
+               command-stats))
+    (switch-to-buffer buffer)))
+
+(load-command-stats)
+
+;; Save the command statistics periodically and when Emacs exits.
+(run-at-time t 600 'save-command-stats)
+(add-hook 'kill-emacs-hook 'save-command-stats)
